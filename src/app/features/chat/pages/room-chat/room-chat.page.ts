@@ -11,12 +11,22 @@ export class RoomChatPage implements OnInit {
   private _roomChatService = new LiveChatService();
 
   messages: ChatMessage[] = [];
+
+  messageToSend: string;
   constructor() {}
 
   ngOnInit(): void {
-    this._roomChatService.initializeNewUserConnection();
+    this._roomChatService
+      .initializeConnection()
+      .pipe(tap(() => this._roomChatService.join()))
+      .subscribe();
+
     this._roomChatService.newMessageEvent
       .pipe(tap((x) => this.messages.push(x)))
       .subscribe();
+  }
+
+  send() {
+    this._roomChatService.sendMessage(this.messageToSend);
   }
 }

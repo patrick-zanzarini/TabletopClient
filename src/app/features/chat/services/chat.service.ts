@@ -1,5 +1,5 @@
 import * as signalR from '@microsoft/signalr';
-import { EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter } from '@angular/core';
 import { from, Observable } from 'rxjs';
 import { ChatMessage } from '../pages/models/chat-message.model';
 
@@ -10,7 +10,7 @@ export class LiveChatService {
 
   constructor() {}
 
-  public initializeNewUserConnection(): Observable<void> {
+  public initializeConnection(): Observable<void> {
     this._hubConnection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:5000/room-chat')
       .build();
@@ -20,13 +20,21 @@ export class LiveChatService {
     return from(this._hubConnection.start());
   }
 
-  public sendNewMessage(message: string): void {
-    this._hubConnection.send('NewMessage', message);
+  public sendMessage(message: string): void {
+    this._hubConnection.send('SendMessage', message);
+  }
+
+  public join(): void {
+    this._hubConnection.send('Join');
+  }
+
+  public leave(): void {
+    this._hubConnection.send('Leave');
   }
 
   private assignNewMessageReceived(): void {
     this._hubConnection.on(
-      'NewMessage',
+      'SendMessage',
       (username: string, message: string) => {
         const newMessage: ChatMessage = { username, message };
         this.newMessageEvent.emit(newMessage);

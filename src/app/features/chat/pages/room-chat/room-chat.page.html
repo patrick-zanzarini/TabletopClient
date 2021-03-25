@@ -1,1 +1,14 @@
-<p>room-chat works!</p>
+<div class="container">
+    <div>
+        <input type="text" [(ngModel)]="messageToSend" />
+        <span>
+            <button (click)="send()">Enviar</button>
+        </span>
+    </div>
+    <br>
+    Messages
+    <div class="message-layout" *ngFor="let message of messages">
+        <div>{{message.username}}:</div>
+        <span>{{message.message}}</span>
+    </div>
+</div>
