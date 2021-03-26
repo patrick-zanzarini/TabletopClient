@@ -2,17 +2,23 @@ import * as signalR from '@microsoft/signalr';
 import { EventEmitter } from '@angular/core';
 import { from, Observable } from 'rxjs';
 import { ChatMessage } from '../pages/models/chat-message.model';
+import { environment } from 'src/environments/environment';
+import { TokenService } from 'src/app/core/services/token.service';
 
 export class LiveChatService {
-  public newMessageEvent = new EventEmitter<ChatMessage>();
+  newMessageEvent = new EventEmitter<ChatMessage>();
 
   private _hubConnection: signalR.HubConnection;
 
-  constructor() {}
+  constructor(private tokenService: TokenService) {}
 
-  public initializeConnection(): Observable<void> {
+  initializeConnection(): Observable<void> {
+    const token = this.tokenService.token;
     this._hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5000/room-chat')
+      .configureLogging(signalR.LogLevel.Debug)
+      .withUrl(environment.url.tabletopApi + '/hub/room-chat', {
+        accessTokenFactory: () => token,
+      })
       .build();
 
     this.assignNewMessageReceived();
@@ -20,15 +26,15 @@ export class LiveChatService {
     return from(this._hubConnection.start());
   }
 
-  public sendMessage(message: string): void {
+  sendMessage(message: string): void {
     this._hubConnection.send('SendMessage', message);
   }
 
-  public join(): void {
+  join(): void {
     this._hubConnection.send('Join');
   }
 
-  public leave(): void {
+  leave(): void {
     this._hubConnection.send('Leave');
   }
 
